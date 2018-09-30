@@ -1,5 +1,5 @@
 {
-  "name": "walk8243-http-proxy",
+  "name": "walk8243-proxy",
   "description": "一つのサーバ内で複数のNodeサーバを立ち上げるためのプロキシサーバを作成",
   "version": "1.0.0",
   "main": "lib/proxy.js",
@@ -15,7 +15,8 @@
   },
   "keywords": [
     "walk8243",
-    "http-proxy"
+    "http-proxy",
+    "proxy-server"
   ],
   "author": "walk8243 (https://qiita.com/walk8243)",
   "license": "ISC",
