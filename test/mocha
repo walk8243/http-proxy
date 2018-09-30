@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+
+describe('Library', () => {
+  require('./lib/converter');
+  require('./lib/func');
+  require('./lib/proxy');
+  require('./lib/response');
+});

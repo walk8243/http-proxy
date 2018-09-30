@@ -1,0 +1,31 @@
+{
+  "name": "walk8243-http-proxy",
+  "description": "一つのサーバ内で複数のNodeサーバを立ち上げるためのプロキシサーバを作成",
+  "version": "1.0.0",
+  "main": "lib/proxy.js",
+  "scripts": {
+    "mocha": "mocha ./test/mocha --exit",
+    "prepublishOnly": "npm i && npm run mocha > /dev/null",
+    "start": "node ./main",
+    "test": "npm run mocha -- -R nyan"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/walk8243/http-proxy.git"
+  },
+  "keywords": [
+    "walk8243",
+    "http-proxy"
+  ],
+  "author": "walk8243 (https://qiita.com/walk8243)",
+  "license": "ISC",
+  "dependencies": {
+    "http-proxy": "^1.17.0",
+    "rfdc": "^1.1.2"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0",
+    "node-mocks-http": "^1.7.0",
+    "sinon": "^6.3.4"
+  }
+}
