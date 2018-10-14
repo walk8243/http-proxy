@@ -1,8 +1,17 @@
 #!/usr/bin/env node
 
 describe('Library', () => {
-  require('./lib/converter');
+  // Based Library
+  require('./lib/statusMessage');
   require('./lib/func');
-  require('./lib/proxy');
+
+  // Expanded Library
+  require('./lib/converter');
   require('./lib/response');
+
+  // Main Library
+  require('./lib/proxy');
+
+  // Util Library
+  require('./lib/processActions');
 });

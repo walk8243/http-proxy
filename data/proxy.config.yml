@@ -1,0 +1,8 @@
+walk8243.com:
+  proxyType: redirect
+  Location: www.walk8243.com
+www.walk8243.com:
+  proxyType: reverseProxy
+  target:
+    host: localhost
+    port: 8080

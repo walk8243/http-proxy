@@ -1,12 +1,13 @@
 {
   "name": "walk8243-proxy",
   "description": "一つのサーバ内で複数のNodeサーバを立ち上げるためのプロキシサーバを作成",
-  "version": "1.0.0",
+  "version": "2.1.0",
   "main": "lib/proxy.js",
   "scripts": {
+    "main": "node main",
     "mocha": "mocha ./test/mocha --exit",
-    "prepublishOnly": "npm i && npm run mocha > /dev/null",
-    "start": "node ./main",
+    "prepublishOnly": "npm update && npm test > /dev/null",
+    "start": "npm run main",
     "test": "npm run mocha -- -R nyan"
   },
   "repository": {
@@ -22,11 +23,13 @@
   "license": "ISC",
   "dependencies": {
     "http-proxy": "^1.17.0",
+    "js-yaml": "^3.12.0",
+    "pmx": "^1.6.7",
     "rfdc": "^1.1.2"
   },
   "devDependencies": {
     "mocha": "^5.2.0",
-    "node-mocks-http": "^1.7.0",
-    "sinon": "^6.3.4"
+    "node-mocks-http": "^1.7.3",
+    "sinon": "^6.3.5"
   }
 }

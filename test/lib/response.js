@@ -2,7 +2,7 @@ const assert  = require('assert'),
       httpMocks = require('node-mocks-http'),
       sinon   = require('sinon');
 const response  = require('../../lib/response'),
-      statusMessages  = require('../../data/statusMessage');
+      statusMessages  = require('../../lib/statusMessage');
 
 describe('lib/response', () => {
   it('内容確認', () => {

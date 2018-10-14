@@ -1,4 +1,5 @@
 const assert  = require('assert'),
+      fs      = require('fs'),
       httpMocks = require('node-mocks-http'),
       sinon   = require('sinon');
 const converter = require('../../lib/converter'),
@@ -8,13 +9,73 @@ const converter = require('../../lib/converter'),
 
 describe('lib/proxy', () => {
   it('内容確認', () => {
-    assert.deepEqual(Object.keys(proxy), [ 'defaultProxyConfig', 'setProxyConfig', 'httpProxyServer' ]);
+    assert.deepEqual(Object.keys(proxy), [ 'proxyConfigFile', 'defaultProxyConfig', 'setProxyConfig', 'generateProxyConfig', 'httpProxyServer' ]);
+    assert.equal(typeof proxy.proxyConfigFile, 'string');
     assert.equal(typeof proxy.defaultProxyConfig, 'object');
     assert.equal(typeof proxy.setProxyConfig, 'function');
+    assert.equal(typeof proxy.generateProxyConfig, 'function');
     assert.equal(typeof proxy.httpProxyServer, 'function');
   });
 
+  describe('proxyConfigFile', () => {
+    it('ファイルの存在確認', () => {
+      try {
+        const stats = fs.statSync(proxy.proxyConfigFile);
+        assert.ok(stats.isFile());
+      } catch(error) {
+        assert.fail(error);
+      }
+    });
+  });
+
   describe('setProxyConfig', () => {
+    let stubFuncReadYamlData,
+        stubProxyGenerateProxyConfig;
+    const dummyYamlData = { dummy: 'yaml data' },
+          dummyProxyConfig = { dummy: 'proxy config' },
+          dummyDefaultProxyConfig = { dummy: 'default proxy config' };
+    before(() => {
+      stubFuncReadYamlData = sinon.stub(func, 'readYamlData');
+      stubProxyGenerateProxyConfig = sinon.stub(proxy, 'generateProxyConfig');
+    });
+    after(() => {
+      stubFuncReadYamlData.restore();
+      stubProxyGenerateProxyConfig.restore();
+    });
+    beforeEach(() => {
+      stubFuncReadYamlData.returns(dummyYamlData);
+      stubProxyGenerateProxyConfig.returns(dummyProxyConfig);
+    });
+    afterEach(() => {
+      stubFuncReadYamlData.reset();
+      stubProxyGenerateProxyConfig.reset();
+    });
+
+    describe('正常系', () => {
+      it('第二引数なし', () => {
+        const target = {};
+        proxy.setProxyConfig(target);
+        assert.deepEqual(target, dummyProxyConfig);
+        assert.ok(stubFuncReadYamlData.calledOnce);
+        assert.deepEqual(stubFuncReadYamlData.getCall(0).args, [ proxy.proxyConfigFile ]);
+        assert.ok(stubProxyGenerateProxyConfig.calledOnce);
+        assert.deepEqual(stubProxyGenerateProxyConfig.getCall(0).args, [ { dummy: 'yaml data' }, proxy.defaultProxyConfig ]);
+        assert.ok(stubProxyGenerateProxyConfig.calledAfter(stubFuncReadYamlData));
+      });
+      it('第二引数あり', () => {
+        const target = {};
+        proxy.setProxyConfig(target, dummyDefaultProxyConfig);
+        assert.deepEqual(target, dummyProxyConfig);
+        assert.ok(stubFuncReadYamlData.calledOnce);
+        assert.deepEqual(stubFuncReadYamlData.getCall(0).args, [ proxy.proxyConfigFile ]);
+        assert.ok(stubProxyGenerateProxyConfig.calledOnce);
+        assert.deepEqual(stubProxyGenerateProxyConfig.getCall(0).args, [ { dummy: 'yaml data' }, dummyDefaultProxyConfig ]);
+        assert.ok(stubProxyGenerateProxyConfig.calledAfter(stubFuncReadYamlData));
+      });
+    });
+  });
+
+  describe('generateProxyConfig', () => {
     let stubFuncDeepCopy,
         stubConverterConvertProxy,
         stubConverterConvertRedirect;
@@ -42,7 +103,7 @@ describe('lib/proxy', () => {
     describe('正常系', () => {
       it('proxyTypeを指定しない', () => {
         const args = [ { target: {} } ];
-        const result = proxy.setProxyConfig(args[0]);
+        const result = proxy.generateProxyConfig(args[0]);
         assert.deepEqual(result, { target: 'ReverseProxy' });
         assert.equal(stubFuncDeepCopy.callCount, Object.keys(args[0]).length);
         assert.ok(stubConverterConvertProxy.calledOnce);
@@ -50,7 +111,7 @@ describe('lib/proxy', () => {
       });
       it('proxyTypeにproxyを指定', () => {
         const args = [ { target: { proxyType: 'proxy' } } ];
-        const result = proxy.setProxyConfig(args[0]);
+        const result = proxy.generateProxyConfig(args[0]);
         assert.deepEqual(result, { target: 'ReverseProxy' });
         assert.equal(stubFuncDeepCopy.callCount, Object.keys(args[0]).length);
         assert.ok(stubConverterConvertProxy.calledOnce);
@@ -58,7 +119,7 @@ describe('lib/proxy', () => {
       });
       it('proxyTypeにreverseProxyを指定', () => {
         const args = [ { target: { proxyType: 'reverseProxy' } } ];
-        const result = proxy.setProxyConfig(args[0]);
+        const result = proxy.generateProxyConfig(args[0]);
         assert.deepEqual(result, { target: 'ReverseProxy' });
         assert.equal(stubFuncDeepCopy.callCount, Object.keys(args[0]).length);
         assert.ok(stubConverterConvertProxy.calledOnce);
@@ -66,7 +127,7 @@ describe('lib/proxy', () => {
       });
       it('proxyTypeにredirectを指定', () => {
         const args = [ { target: { proxyType: 'redirect' } } ];
-        const result = proxy.setProxyConfig(args[0]);
+        const result = proxy.generateProxyConfig(args[0]);
         assert.deepEqual(result, { target: 'Redirect' });
         assert.equal(stubFuncDeepCopy.callCount, Object.keys(args[0]).length);
         assert.ok(stubConverterConvertRedirect.calledOnce);
@@ -74,7 +135,7 @@ describe('lib/proxy', () => {
       });
       it('proxyConfigに複数存在', () => {
         const args = [ { target1: {}, target2: { proxyType: 'proxy' }, target3: { proxyType: 'reverseProxy' }, target4: { proxyType: 'redirect' } } ];
-        const result = proxy.setProxyConfig(args[0]);
+        const result = proxy.generateProxyConfig(args[0]);
         assert.deepEqual(result, { target1: 'ReverseProxy', target2: 'ReverseProxy', target3: 'ReverseProxy', target4: 'Redirect' });
         assert.equal(stubFuncDeepCopy.callCount, Object.keys(args[0]).length);
         assert.ok(stubConverterConvertProxy.calledThrice);
@@ -84,7 +145,7 @@ describe('lib/proxy', () => {
       });
       it('proxyTypeに候補以外を指定', () => {
         const args = [ { target1: { proxyType: 'aaa' }, target2: { proxyType: 'bbb' } } ];
-        const result = proxy.setProxyConfig(args[0]);
+        const result = proxy.generateProxyConfig(args[0]);
         assert.deepEqual(result, {});
         assert.equal(stubFuncDeepCopy.callCount, Object.keys(args[0]).length);
         assert.ok(stubConverterConvertProxy.notCalled);
@@ -110,7 +171,7 @@ describe('lib/proxy', () => {
       it('func.deepCopy is throws', () => {
         stubFuncDeepCopy.throws();
         try {
-          proxy.setProxyConfig({ target: {} });
+          proxy.generateProxyConfig({ target: {} });
           assert.fail();
         } catch(error) {
           assert.equal(error.name, 'Error');
@@ -122,7 +183,7 @@ describe('lib/proxy', () => {
       });
       it('converter.convertProxy is throws', () => {
         stubConverterConvertProxy.throws();
-        proxy.setProxyConfig({ target: { proxyType: 'proxy' } });
+        proxy.generateProxyConfig({ target: { proxyType: 'proxy' } });
         assert.ok(stubFuncDeepCopy.called);
         assert.ok(stubConverterConvertProxy.called);
         assert.ok(stubConverterConvertRedirect.notCalled);
@@ -134,7 +195,7 @@ describe('lib/proxy', () => {
       });
       it('converter.convertRedirect is throws', () => {
         stubConverterConvertRedirect.throws();
-        proxy.setProxyConfig({ target: { proxyType: 'redirect' } });
+        proxy.generateProxyConfig({ target: { proxyType: 'redirect' } });
         assert.ok(stubFuncDeepCopy.called);
         assert.ok(stubConverterConvertProxy.notCalled);
         assert.ok(stubConverterConvertRedirect.called);
