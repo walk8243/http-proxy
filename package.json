@@ -22,14 +22,14 @@
   "author": "walk8243 (https://qiita.com/walk8243)",
   "license": "ISC",
   "dependencies": {
-    "http-proxy": "^1.17.0",
-    "js-yaml": "^3.12.0",
+    "http-proxy": "^1.18.1",
+    "js-yaml": "^3.14.0",
     "pmx": "^1.6.7",
-    "rfdc": "^1.1.2"
+    "rfdc": "^1.1.4"
   },
   "devDependencies": {
-    "mocha": "^5.2.0",
-    "node-mocks-http": "^1.7.3",
-    "sinon": "^6.3.5"
+    "mocha": "^8.0.1",
+    "node-mocks-http": "^1.8.1",
+    "sinon": "^9.0.2"
   }
 }
